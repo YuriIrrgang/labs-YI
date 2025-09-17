@@ -497,7 +497,21 @@ Can you write a function to calculate the mode for a variable in the data? Let's
 # you might want to 
 # a) count how many times each value appears in a vector
 # b) find which value(s) appear most frequently
+
+library(tidyverse)
+
+get_mode <- function(x) {
+  
+}
 ```
+# tidyverse solution
+library(tidyverse)
+get_mode <- function(v) {
+  as.data.frame(v) |> # turning into dataframe 
+    filter(!is.na(v)) |> # keeping all non na values
+    count(v, sort = TRUE) |> # similar to table, count of how many times appear in v, sort = True ensures that most popular category appears at the top
+    slice(1) |> # slices data frame so it just takes the first row
+    pull(v) # pulls solution out of slice 
 :::
 
 ---
