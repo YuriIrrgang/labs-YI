@@ -725,7 +725,9 @@ Write a function that returns both the mean and the standard deviation for the n
 :::
 
 ```{r}
-
+mean_sd <- function(x) {
+  
+}
 ```
 
 
