@@ -126,6 +126,10 @@ Group the penguins by species and nest the remaining data into a column called d
 
 ```{r, echo= FALSE, eval= FALSE}
 # Your code here: Use group_by() and nest()
+
+penguins_nested <- penguins %>% 
+  group_by(species) %>%
+  nest ()
 ```
 :::
 :::alert-info
@@ -138,6 +142,13 @@ Write a function called `summarize_bills` that takes a dataframe and returns:
 ```{r, echo= FALSE, eval= FALSE}
 summarize_bills <- function(df) {
   # Your code here: use summarise() to create the three variables
+  df %>%
+    summarise(
+    count_rows = nrow(df),
+    mean_bill_length_mm = mean(df$bill_length_mm, na.rm = TRUE), 
+    max_bill_length_mm = max(df$bill_length_mm, na.rm = TRUE)
+    ) %>%
+    return()
 }
 
 # Test your function on the first species
