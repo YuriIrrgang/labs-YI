@@ -93,7 +93,7 @@ knitr::include_graphics("pics/data-science-communicate.png")
 
 Today we will mostly deal with the "Model" and "Communicate" steps shown in the graph.
 
-:::{.alert-info .pad-box}
+::: {.alert-info .pad-box}
 In this session, we won't focus on the statistical considerations that inform your model choice, but rather show you how to:
 
 -   Use formulas to specify multiple models
@@ -104,7 +104,7 @@ In this session, we won't focus on the statistical considerations that inform yo
 You will have full courses dedicated to thinking about modelling choices, such as Causal Inference and Machine Learning.
 :::
 
----
+------------------------------------------------------------------------
 
 # Setup
 
@@ -128,19 +128,20 @@ life_expec_dat <- readr::read_csv("life_expectancy.csv") |>
 
 head(life_expec_dat)
 ```
+
 ------------------------------------------------------------------------
 
 # Using Formulas in R `r emo::ji("teacher")`
 
-R, as a programming language, was specifically designed with statistical analysis in mind. Therefore the founding fathers of R  🙌 - in their infinite wisdom - decided to create a special object class (called `formula`) to help with running models.
+R, as a programming language, was specifically designed with statistical analysis in mind. Therefore the founding fathers of R 🙌 - in their infinite wisdom - decided to create a special object class (called `formula`) to help with running models.
 
----
+------------------------------------------------------------------------
 
 ## Crafting formulas
 
 The basic structure of a formula:
 
-```r
+``` r
 y ~ x
 ```
 
@@ -156,7 +157,7 @@ Note: Both sides of this equation go by many names. The left-hand side, often wr
 
 A quick recap of the syntax used within formulas. The `~` (*tilde*) sign generally differentiates between dependent and independent variables. The `+` sign is used to distinguish between independent variables. Here are a few more common formula inputs that are useful to know:
 
-```r
+``` r
 y ~ x1 + x2 # Standard formula
 
 y ~ . # Including all other columns in data as x variables.
@@ -168,10 +169,11 @@ y ~ x1 + x2 + x1*x2 # The same as the above
 
 y ~ x1:x2  # Only the interaction, no main effects (rare that you would want this)
 
-y ~ x + I(x^2) # Adds the higher order term x^2. 
+y ~ x + I(x^2) # Adds the higher order term x^2. #if you want to use formula 
 ```
 
 ## A More Explicit Way to Create Formulas
+
 Formulas are generally straightforward to work with. To make things clearer and easier to automate we can split the process into two steps:
 
 **Step 1:** Create a string containing the written formula.
@@ -197,22 +199,34 @@ reg2 <- lm(life_expectancy ~ gdp, data = life_expec_dat)
 reg1$coefficients == reg2$coefficients
 ```
 
-:::{.alert-info .pad-box}
-**Excercise 1**
-Using the two-step approach, create formulas that perform the following regressions, in each case run the model and inspect the output:
+::: {.alert-info .pad-box}
+**Excercise 1** Using the two-step approach, create formulas that perform the following regressions, in each case run the model and inspect the output:
 
-- Regress `life_expectancy` on `gdp`, `population`, and `alcohol`
+-   Regress `life_expectancy` on `gdp`, `population`, and `alcohol`
 
-- Regress `life_expectancy` on `gdp`, `population`, `alcohol`, and the interaction between `gdp` and `population`
+-   Regress `life_expectancy` on `gdp`, `population`, `alcohol`, and the interaction between `gdp` and `population`
 
-- Regress `life_expectancy` on `gdp`, the square of `gdp` and the log of `population`
+-   Regress `life_expectancy` on `gdp`, the square of `gdp` and the log of `population`
 
 ```{r, echo= FALSE}
-# your code here
+formula_string_1 <- paste("life_expectancy", "~ gdp", "+ population", "+ alcohol")
+formula_1 <- as.formula (formula_string_1)
+reg_1 <- lm(formula_1, data = life_expec_dat)
+reg_1
+
+formula_string_2 <- paste(formula_string_1, "+ gdp * population")
+formula_2 <- as.formula(formula_string_2)
+reg_2 <- lm(formula_2, data = life_expec_dat)
+reg_2
+
+formula_string_3 <- paste("life_expectancy", "~ gdp + I(gdp^2) + log(population)")
+formula_3 <- as.formula(formula_string_3)
+reg_3 <- lm(formula_3, data = life_expec_dat)
+reg_3
 ```
 :::
 
----
+------------------------------------------------------------------------
 
 ## Iteration
 
@@ -262,7 +276,7 @@ biv_model_out_w_names <-  vars |>
 biv_model_out_w_names$year # we can now easily index independent vars
 ```
 
-Say that you're interested in seeing what effect `gdp` has on `life_expectancy`, but you suspect that other covariates such as alcohol consumption, health care expenditure, average body mass index and the propagation of aids also have an effect. 
+Say that you're interested in seeing what effect `gdp` has on `life_expectancy`, but you suspect that other covariates such as alcohol consumption, health care expenditure, average body mass index and the propagation of aids also have an effect.
 
 On top of this, it's possible that these variables might have different effects on `life_expectancy` depending on how they interact with each other. We can determine which independent variables are robustly associated with the dependent variable by generating models for every possible combination of independent variables and then looking into the distribution of effects across these models.
 
@@ -326,12 +340,15 @@ multiv_model_out <- combn_models(depvar = depvar, covars = covars, data = life_e
 length(multiv_model_out)
 ```
 
-:::{.alert-danger .pad-box}
+::: {.alert-danger .pad-box}
 ## Excercise 2
+
 Look at the `multiv_model_out` object that you have just created. Try to get a sense of the structure of the output. Pick three different models and inspect their output using the `summary()` function. Consider which model you think is "best" and why.
 
 ```{r, echo= FALSE}
-# your code here
+summary(multiv_model_out[[10]])
+summary(multiv_model_out[[25]])
+summary(multiv_model_out[[31]])
 ```
 :::
 
@@ -407,7 +424,7 @@ plot(results)
 -   **Y-axis (left)** = specific analytic decisions within each category
 -   **Lines** = indicates whether a specific analytic decision was true for that particular model specification
 
----
+------------------------------------------------------------------------
 
 # Interpretable Effect Sizes `r emo::ji("magnifying")`
 
@@ -505,7 +522,7 @@ broom::augment(multiv_model_out[[30]], se_fit = TRUE)
 
 Doesn't this look so much tidier?
 
----
+------------------------------------------------------------------------
 
 ## Broom with Many Models
 
@@ -531,7 +548,7 @@ For this we will use the `modelsummary` package by [Vincent Arel-Bundock's](http
 
 One reason that we like this package is that it combines both approaches of presenting model results, either as a **table** or as a **coefficient plot**. As we saw in the lecture, each method has its advantages and its drawbacks. Therefore, we will cover both here.
 
----
+------------------------------------------------------------------------
 
 ## Using Regression Tables
 
@@ -600,19 +617,37 @@ mod_table |>
   row_spec(5, background = 'lightblue')
 ```
 
-:::{.alert-info .pad-box}
-**Excercise 3**
-Our implementation of `modelsummary` above is good, but it can be improved further. Using the code chunk above as a starting point, try to:
-- Switch to using significant digits instead of fixed decimal places so that gdp and percent_expenditure are interpretable.
-- Add a note at the bottom of the table indicating that the data originated at the WHO.
-- Be creative and customize the table to your liking using `kableExtra` options.
-
+::: {.alert-info .pad-box}
+**Excercise 3** Our implementation of `modelsummary` above is good, but it can be improved further. Using the code chunk above as a starting point, try to: - Switch to using significant digits instead of fixed decimal places so that gdp and percent_expenditure are interpretable. - Add a note at the bottom of the table indicating that the data originated at the WHO. - Be creative and customize the table to your liking using `kableExtra` options.
 
 ```{r, echo= FALSE}
+mod_table_YI <- modelsummary::modelsummary(multiv_model_out[29:31], 
+                                        output = "kableExtra",
+                                        fmt = fmt_significant(2),  # 2-digits and trailing 0  
+                                        estimate  = "{estimate}",
+                                        statistic = "conf.int",
+                                        coef_omit = "Intercept",
+                                        coef_rename=c("gdp"="Gdp", 
+                                                      "bmi"="Avg. BMI", 
+                                                      "alcohol" = "Alcohol Consum.",
+                                                      "hiv_aids"= "HIV cases", 
+                                                      "percentage_expenditure" = "Health Expenditure (% of GDP)",
+                                                      "life_expectancy" = "Life Expectancy"),
+                                        gof_omit = 'DF|Deviance|Log.Lik|AIC|BIC',
+                                        title = 'An Improved Regression Table',
+                                        notes = "Data originated at the WHO.",
+                                        escape = FALSE)
+mod_table_YI
 
-```  
+mod_table_YI |> 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, fixed_thead = T) |> 
+  row_spec(3, color = 'red') |>
+  row_spec(5, background = 'lightblue')
+
+```
 :::
----
+
+------------------------------------------------------------------------
 
 ## Using Plots 🎨
 
@@ -648,6 +683,7 @@ This script was drafted by [Tom Arendt](https://github.com/tom-arend) and [Lisa 
 ------------------------------------------------------------------------
 
 # Appendix
+
 ## More Formula info
 
 Create a formula for a model with a large number of variables:
@@ -658,12 +694,12 @@ xnam <- paste0("x", 1:25)
 ```
 
 ## The update function
+
 The update function lets us incrementally modify/update a formula:
 
 ```{r}
 #?update
 ```
-
 
 ## Working with model outputs in base R
 
