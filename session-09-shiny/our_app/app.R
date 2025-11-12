@@ -19,7 +19,7 @@ all_movies <- dplyr::inner_join(omdb, tomatoes, by = "ID") %>%
   dplyr::select(ID, imdbID, Title, Year, Rating_m = Rating.x, Runtime, Released,
                 Director, Writer, imdbRating, imdbVotes, Language, Country, Oscars,
                 Rating = Rating.y, Meter, Reviews, Fresh, Rotten, userMeter, userRating, userReviews,
-                BoxOffice, Production, Cast)
+                BoxOffice, Production, Cast, Genre)
 
 # Variables that can be put on the x and y axes
 axis_vars <- c(
@@ -64,7 +64,8 @@ ui <- fluidPage(
              sliderInput("boxoffice", "Dollars at Box Office (millions)",
                          0, 800, c(0, 800), step = 1),
              textInput("director", "Director name contains (e.g., Miyazaki)"),
-             textInput("cast", "Cast names contains (e.g. Tom Hanks)")
+             textInput("cast", "Cast names contains (e.g. Tom Hanks)"),
+             textInput("genre", "Subseting film by genre (e.g., Action)")
            ),
            
            # Plot axis selector
@@ -132,6 +133,12 @@ server <- function(input, output, session) {
       m <- m %>% filter(Cast %like% cast)
     }
     
+    #Optional: filter by genre
+    if (!is.null(input$genre) && input$genre != "") {
+      genre <- paste0("%", input$genre, "%")
+      m <- m %>% filter(Genre %like% genre)
+    }
+    
     # return m
     m <- as.data.frame(m)
     
@@ -163,6 +170,7 @@ server <- function(input, output, session) {
     xvar_name <- names(axis_vars)[axis_vars == input$xvar]
     yvar_name <- names(axis_vars)[axis_vars == input$yvar]
     
+    
     df <- movies()  # store once so we don't call movies() repeatedly
     
     # Build ggplot
@@ -177,13 +185,14 @@ server <- function(input, output, session) {
         '<b>', Title, '</b><br>',
         'Year: ', Year, '<br>',
         'Box Office: $', round(BoxOffice / 1000000, digits = 1), 'm'
-      )"
+      )",
+        size = "BoxOffice"
       )
     ) +
       geom_point(shape = 21, alpha = 0.7) +
       scale_fill_manual(values = c("Yes" = "orange", "No" = "gray"),name = "Won an Oscar") +
       scale_color_manual(values = c("Yes" = "orange", "No" = "gray"),guide = "none") +
-      labs(
+      labs(title = paste(xvar_name, "vs", yvar_name),
         x = xvar_name,
         y = yvar_name
       ) +
